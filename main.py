@@ -51,7 +51,8 @@ def call_openweather_api(endpoint,res_array,coords):
             data = response.json()
             res_array.append(data)
             print('Successfully fetched api data')
-    json_file = json.dumps(res_array, ensure_ascii=False, indent=4).encode('utf-8')
+    wrapped_array = {"results": res_array}
+    json_file = json.dumps(wrapped_array, ensure_ascii=False, indent=4).encode('utf-8')
 
     return json_file
 
