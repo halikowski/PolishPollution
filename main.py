@@ -45,7 +45,10 @@ def call_openweather_api(endpoint,res_array,coords):
         "content-type": "application/json"
     }
     for lat,lon in coords:
-        url = f'http://api.openweathermap.org/data/2.5/{endpoint}?lat={lat}&lon={lon}&appid={OPENWEATHER_API_KEY}'
+        if endpoint == 'weather':
+            url = f'http://api.openweathermap.org/data/2.5/{endpoint}?units=metric&lat={lat}&lon={lon}&appid={OPENWEATHER_API_KEY}'
+        else:
+            url = f'http://api.openweathermap.org/data/2.5/{endpoint}?lat={lat}&lon={lon}&appid={OPENWEATHER_API_KEY}'
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             data = response.json()
