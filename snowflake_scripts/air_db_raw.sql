@@ -14,6 +14,7 @@ create or replace git repository polish_pollution_repo
 
     
 show git branches in git repository polish_pollution_repo;
+ls @polish_pollution_repo/branches/main;
 
 ALTER SESSION SET TIMEZONE = 'Europe/Warsaw';
 
@@ -165,7 +166,10 @@ CREATE OR REPLACE PIPE weather_pipe
 ALTER PIPE pollution_pipe REFRESH;
 ALTER PIPE weather_pipe REFRESH;
 
+
 -- TABLE CHECKUP
 SELECT * FROM staging_pollution;
 SELECT * from staging_weather;
 list @pollution_s3_stage;
+
+SELECT $1 FROM @polish_pollution_repo/branches/main/PLcities_over_100k.csv;
