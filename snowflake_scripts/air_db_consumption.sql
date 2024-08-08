@@ -12,6 +12,7 @@ AS
 $$
 def prominent_index(no, no2, o3, so2, pm2_5, pm10, nh3):
     # Mapping column names
+    # This function does not take CO into consideration, as it's norm  in ug/m3 is approx. 10x higher than other pollutants
     values = {
         'NO': no,
         'NO2': no2,
@@ -33,11 +34,11 @@ WAREHOUSE = 'TRANSFORM_WH'
 AS
 SELECT
     cp.record_ts,
-    year(cp.record_ts) as year,
-    quarter(cp.record_ts) as quarter,
-    month(cp.record_ts) as month,
-    day(cp.record_ts) as day,
-    hour(cp.record_ts) as hour,
+    year(cp.record_ts) as meas_year,
+    quarter(cp.record_ts) as meas_quarter,
+    month(cp.record_ts) as meas_month,
+    day(cp.record_ts) as meas_day,
+    hour(cp.record_ts) as meas_hour,
     pop.city as city,
     pop.population as population,
     cp.lat as lat,
@@ -72,3 +73,85 @@ LEFT JOIN curated.cities_pop as pop
 ON LEFT(cp.lat,5) = LEFT(pop.lat,5) AND LEFT(cp.lon,5) = LEFT(pop.lon,5);
 
 select * from final_conditions_wide;
+
+-- DIMENSION & FACT TABLES
+CREATE OR REPLACE DYNAMIC TABLE date_dim
+TARGET_LAG = 'DOWNSTREAM'
+WAREHOUSE = 'TRANSFORM_WH'
+AS
+WITH date_cte AS(
+    SELECT
+        record_ts as measurement_time,
+        meas_year,
+        meas_quarter,
+        meas_month,
+        meas_day,
+        meas_hour,
+    FROM final_conditions_wide
+    GROUP BY 1,2,3,4,5,6
+)
+SELECT 
+    hash(measurement_time) as date_pk,
+    *
+FROM date_cte
+ORDER BY measurement_time DESC;
+
+CREATE OR REPLACE DYNAMIC TABLE location_dim
+TARGET_LAG = 'DOWNSTREAM'
+WAREHOUSE = 'TRANSFORM_WH'
+AS
+WITH geo_cte AS(
+    SELECT
+        city,
+        population,
+        lat,
+        lon
+    FROM final_conditions_wide
+    GROUP BY 1,2,3,4
+)
+SELECT
+    hash(lat,lon) as location_pk,
+    *
+FROM geo_cte
+ORDER BY city;
+
+CREATE OR REPLACE DYNAMIC TABLE conditions_fact
+TARGET_LAG = '30 min'
+WAREHOUSE = 'TRANSFORM_WH'
+AS
+SELECT
+    hash(record_ts,lat,lon) as measurement_pk,
+    hash(record_ts) as date_fk,
+    hash(lat,lon) as location_fk,
+    aqi,
+    prominent_pollutant,
+    weather_con,
+    co,
+    no,
+    no2,
+    o3,
+    so2,
+    pm2_5,
+    pm10,
+    nh3,
+    temp,
+    feels_like,
+    min_temp,
+    max_temp,
+    pressure,
+    humidity,
+    visibility,
+    wind_speed,
+    wind_deg,
+    clouds
+FROM final_conditions_wide;
+
+
+-- test query
+select measurement_pk, measurement_time, city, aqi, prominent_pollutant, weather_con
+from conditions_fact cf
+INNER JOIN location_dim loc
+ON cf.location_fk = loc.location_pk
+INNER JOIN date_dim d
+ON cf.date_fk = d.date_pk;
+    
