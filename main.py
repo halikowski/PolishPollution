@@ -52,6 +52,9 @@ def call_openweather_api(endpoint,res_array,coords):
         response = requests.get(url, headers=headers)
         if response.status_code == 200:
             data = response.json()
+            # swap response's coords with the original input coords from .csv file
+            data['coord']['lat'] = lat
+            data['coord']['lon'] = lon
             res_array.append(data)
             print('Successfully fetched api data')
     wrapped_array = {"results": res_array}
