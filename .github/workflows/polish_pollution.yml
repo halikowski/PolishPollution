@@ -1,0 +1,27 @@
+name: polish_pollution_api_s3
+
+on:
+  workflow_dispatch:
+
+jobs:
+  upload_to_s3:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: pip install -r requirements.txt
+
+    - name: Run Python script
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        OPENWEATHER_API_KEY: ${{ secrets.API_KEY }}
+      run: python main.py
