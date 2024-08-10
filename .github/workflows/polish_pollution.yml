@@ -1,10 +1,10 @@
 name: polish_pollution_api_s3
 
 on:
-  # Optional manual trigger
-  workflow_dispatch:
-  # schedule:
-  #   - cron: '45 * * * *' # run script every hour at 45th min
+  # Optional manual trigger - debugging
+  # workflow_dispatch:
+  schedule:
+    - cron: '45 * * * *' # run script every hour at 45th min
 
 jobs:
   upload_to_s3:
