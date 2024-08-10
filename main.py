@@ -11,8 +11,8 @@ AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
 
-# timezone = pytz.timezone('Europe/Warsaw')
-CURRENT_TIMESTAMP = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
+timezone = pytz.timezone('Europe/Warsaw')
+CURRENT_TIMESTAMP = datetime.datetime.now(timezone).strftime('%Y-%m-%dT%H:%M')
 
 # Convert csv file to JSON
 cities = (pd.read_csv("./PLcities_over_100k.csv", delimiter=';').
@@ -24,6 +24,8 @@ cities_data = json.loads(cities)
 # Extract coordinates - as latitudes and longitudes separately, for API calling on each pair
 lats = [city['Latitude'] for city in cities_data]
 lons = [city['Longitude'] for city in cities_data]
+print(f'LATS: {lats}')
+print(f'LONS: {lons}')
 
 # Empty arrays to gather all API outputs
 aq_data = []
