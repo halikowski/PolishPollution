@@ -27,5 +27,5 @@ jobs:
         # Get all credentials from GitHub repo secrets
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        OPENWEATHER_API_KEY: ${{ secrets.API_KEY }}
+        OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
       run: python main.py
