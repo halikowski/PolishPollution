@@ -11,8 +11,8 @@ AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
 
-timezone = pytz.timezone('Europe/Warsaw')
-CURRENT_TIMESTAMP = datetime.datetime.now(timezone).strftime('%Y-%m-%dT%H:%M')
+# timezone = pytz.timezone('Europe/Warsaw')
+CURRENT_TIMESTAMP = datetime.datetime.now().strftime('%Y-%m-%dT%H:%M')
 
 # Convert csv file to JSON
 cities = (pd.read_csv("./PLcities_over_100k.csv", delimiter=';').
