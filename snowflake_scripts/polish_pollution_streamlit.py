@@ -8,6 +8,7 @@ st.title("Air pollution in Poland")
 st.write(
     """This app shows current and historical air pollution in Poland, accompanied by
 weather info. You can choose from 48 Polish cities (or big Warsaw districts) with population over 100k.
+All indexes are shown in µg/m3.
     """
 )
 
@@ -23,13 +24,14 @@ city_query = """
     GROUP BY city
     ORDER BY 1 DESC;
 """
-# Run the query
+# Run the query and create list of city names
 city_list = session.sql(city_query).collect()
 city_names = [row['CITY'] for row in city_list]
+
 # Create dropdown list for cities
 city_opt = st.selectbox('Select City', city_names)
 
-
+# If city chosen, create date dropdown list
 if (city_opt is not None and len(city_opt) > 1):
     date_query = f"""
         SELECT measurement_date
@@ -43,7 +45,7 @@ if (city_opt is not None and len(city_opt) > 1):
     date_names = [row['MEASUREMENT_DATE'] for row in date_list]
     date_opt = st.selectbox('Select Date', date_names)
 
-
+# If date chosen, create checkbox for switching between all-in-1 or specific pollutant
 if (date_opt is not None and not st.checkbox('Specific pollutant')):
     trend_sql = f"""
         SELECT
@@ -67,7 +69,8 @@ if (date_opt is not None and not st.checkbox('Specific pollutant')):
         sf_df,
         columns = ['Hour','CO','NO','NO2','O3','SO2','PM2_5','PM10','NH3']
     )
-
+    
+# If checkbox clicked, provide pollutant dropdown list
 elif (date_opt is not None):
     pollutant_opt = ''
     pollutants_list = ['CO', 'NO', 'NO2', 'O3', 'SO2', 'PM2_5', 'PM10', 'NH3']
@@ -91,13 +94,30 @@ elif (date_opt is not None):
         columns = ['Hour',f'{pollutant_opt}']
     )
 
-# Charts creation
-
+# Bar chart creation for pollutants 
 st.bar_chart(pd_df, x='Hour')
 st.divider()
-st.line_chart(pd_df,x='Hour')
+
+# Query to obtain basic weather data for chosen city at chosen date
+aqi_weather_sql = f"""
+    SELECT
+        hour(measurement_time) as Hour,
+        aqi_avg,
+        temp_avg,
+        wind_speed_avg
+    FROM AIR_DB.CONSUMPTION.CONDITIONS_FACT_DAY_AGG
+    WHERE city = '{city_opt}'
+            AND measurement_date = '{date_opt}'
+        ORDER BY measurement_date
+"""
+
+aqi_weather_sf_df = session.sql(aqi_weather_sql).collect()
+aqi_weather_df = pd.DataFrame(aqi_weather_sf_df, columns=['Hour','AQI','Temp','WindSpeed'])
+# Create line chart showing AQI, temperature and wind speed
+st.line_chart(aqi_weather_df, x='Hour')
 
 
+# Get coordinates for all locations
 map_sql = f"""
     SELECT
         l.lat,
@@ -114,7 +134,7 @@ map_sql = f"""
             LIMIT 1
             )
     """
-
+# Get coordinates for single, chosen location
 single_map_sql = f"""
     SELECT
         l.lat,
@@ -131,5 +151,6 @@ sf_full_map_df = session.sql(map_sql).collect()
 full_map_df = pd.DataFrame(sf_full_map_df, columns=['lat','lon','AQI'])
 single_map_df = pd.DataFrame(sf_single_map_df, columns=['lat','lon'])
 
+# Create map charts for all and for single location
 st.map(single_map_df)
 st.map(full_map_df, size='AQI')
