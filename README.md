@@ -12,4 +12,4 @@ The population limit results from API rates that are allowed with free subscript
 
 To read more about this project, view some examples and browse a few images, I encourage You to check this PDF Overview that i created:
 
-[PDF Overview](https://github.com/halikowski/PolishPollution/edit/main/PolishPollution-ProjectOverview.pdf)
+[PDF Overview](https://github.com/halikowski/PolishPollution/blob/main/PolishPollution-ProjectOverview.pdf)
